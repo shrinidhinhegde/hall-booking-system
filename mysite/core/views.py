@@ -4,6 +4,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from .forms import NewBooking
+from .models import Booking
 
 
 def home(request):
@@ -28,8 +30,12 @@ def signup(request):
 
 @login_required
 def secret_page(request):
-    return render(request, 'secret_page.html')
-
-
-class SecretPage(LoginRequiredMixin, TemplateView):
-    template_name = 'secret_page.html'
+    if request.method == 'POST':
+        form = NewBooking(request.POST)
+        if form.is_valid():
+            obj = form.save()
+        return redirect('home')
+    else:
+        form = NewBooking()
+        display = Booking.objects.all()
+        return render(request, 'secret_page.html', {'form': form,'list':display})
